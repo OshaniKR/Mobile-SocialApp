@@ -41,7 +41,6 @@ class _SignupPageState extends State<SignupPage> {
     String password = passwordTextController.text.trim();
     String confirmPassword = confirmPasswordController.text.trim();
 
-    // Validate input
     if (email.isEmpty || password.isEmpty || confirmPassword.isEmpty) {
       _showErrorDialog('Please fill all the fields');
       return;
@@ -58,7 +57,6 @@ class _SignupPageState extends State<SignupPage> {
     });
 
     try {
-      // Register the user using FirebaseAuth
       UserCredential userCredential =
           await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: email,
@@ -73,7 +71,6 @@ class _SignupPageState extends State<SignupPage> {
         'bio': 'Empty bio..',
       });
 
-      // On successful registration, navigate to the Get Started page
       if (userCredential.user != null) {
         Navigator.pushReplacement(
           context,
@@ -81,7 +78,6 @@ class _SignupPageState extends State<SignupPage> {
         );
       }
     } catch (e) {
-      // Handle registration errors
       _showErrorDialog('Failed to sign up: ${e.toString()}');
     } finally {
       setState(() {
@@ -90,7 +86,6 @@ class _SignupPageState extends State<SignupPage> {
     }
   }
 
-  // Function to show an error dialog
   void _showErrorDialog(String message) {
     showDialog(
       context: context,
@@ -114,128 +109,137 @@ class _SignupPageState extends State<SignupPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[300],
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20),
-              gradient: LinearGradient(
-                colors: [Colors.white, Colors.orange.shade100],
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
+      backgroundColor: Colors.transparent, // Set the background to transparent
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          // Full-screen Container
+          Positioned.fill(
+            child: Container(
+              decoration: BoxDecoration(
+                color:
+                    Colors.white.withOpacity(0.7), // Background opacity color
+                borderRadius: BorderRadius.circular(0),
               ),
-            ),
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Sign up',
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.orange.shade800,
-                  ),
-                ),
-                const SizedBox(height: 20),
-                TextField(
-                  controller: emailTextController,
-                  decoration: const InputDecoration(
-                    labelText: 'Email',
-                    labelStyle: TextStyle(color: Colors.black),
-                    border: UnderlineInputBorder(
-                      borderSide: BorderSide(color: Colors.black),
-                    ),
-                    focusedBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(color: Colors.black),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Image/Icon on the top-right
+                  Align(
+                    alignment: Alignment.topRight,
+                    child: Image.asset(
+                      'assets/petpals.png', // Your image path here
+                      height: 50,
+                      width: 50,
                     ),
                   ),
-                ),
-                const SizedBox(height: 20),
-                TextField(
-                  controller: passwordTextController,
-                  decoration: const InputDecoration(
-                    labelText: 'Password',
-                    labelStyle: TextStyle(color: Colors.black),
-                    border: UnderlineInputBorder(
-                      borderSide: BorderSide(color: Colors.black),
-                    ),
-                    focusedBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(color: Colors.black),
+                  Text(
+                    'Sign up',
+                    style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.orange.shade800,
                     ),
                   ),
-                  obscureText: true,
-                ),
-                const SizedBox(height: 20),
-                TextField(
-                  controller: confirmPasswordController,
-                  decoration: const InputDecoration(
-                    labelText: 'Confirm Password',
-                    labelStyle: TextStyle(color: Colors.black),
-                    border: UnderlineInputBorder(
-                      borderSide: BorderSide(color: Colors.black),
-                    ),
-                    focusedBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(color: Colors.black),
-                    ),
-                  ),
-                  obscureText: true,
-                ),
-                const SizedBox(height: 40),
-                Center(
-                  child: _isLoading
-                      ? const CircularProgressIndicator()
-                      : ElevatedButton.icon(
-                          onPressed: _signUp, // Trigger sign up
-                          icon: const Icon(Icons.arrow_forward,
-                              color: Colors.white),
-                          label: const Text('Sign up'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.orange.shade800,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(30),
-                            ),
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 40, vertical: 15),
-                          ),
-                        ),
-                ),
-                if (_errorMessage != null) ...[
                   const SizedBox(height: 20),
-                  Center(
-                    child: Text(
-                      _errorMessage!,
-                      style: const TextStyle(color: Colors.red),
+                  TextField(
+                    controller: emailTextController,
+                    decoration: const InputDecoration(
+                      labelText: 'Email',
+                      labelStyle: TextStyle(color: Colors.black),
+                      border: UnderlineInputBorder(
+                        borderSide: BorderSide(color: Colors.black),
+                      ),
+                      focusedBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(color: Colors.black),
+                      ),
                     ),
                   ),
-                ],
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      "Already have an account?",
-                      style: TextStyle(color: Colors.grey[700]),
+                  const SizedBox(height: 20),
+                  TextField(
+                    controller: passwordTextController,
+                    decoration: const InputDecoration(
+                      labelText: 'Password',
+                      labelStyle: TextStyle(color: Colors.black),
+                      border: UnderlineInputBorder(
+                        borderSide: BorderSide(color: Colors.black),
+                      ),
+                      focusedBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(color: Colors.black),
+                      ),
                     ),
-                    const SizedBox(width: 4),
-                    GestureDetector(
-                      onTap: widget.onTap,
+                    obscureText: true,
+                  ),
+                  const SizedBox(height: 20),
+                  TextField(
+                    controller: confirmPasswordController,
+                    decoration: const InputDecoration(
+                      labelText: 'Confirm Password',
+                      labelStyle: TextStyle(color: Colors.black),
+                      border: UnderlineInputBorder(
+                        borderSide: BorderSide(color: Colors.black),
+                      ),
+                      focusedBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(color: Colors.black),
+                      ),
+                    ),
+                    obscureText: true,
+                  ),
+                  const SizedBox(height: 40),
+                  Center(
+                    child: _isLoading
+                        ? const CircularProgressIndicator()
+                        : ElevatedButton.icon(
+                            onPressed: _signUp,
+                            icon: const Icon(Icons.arrow_forward,
+                                color: Colors.white),
+                            label: const Text('Sign up'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.orange.shade800,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(30),
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 40, vertical: 15),
+                            ),
+                          ),
+                  ),
+                  if (_errorMessage != null) ...[
+                    const SizedBox(height: 20),
+                    Center(
                       child: Text(
-                        "Login Now",
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.orange.shade800,
-                        ),
+                        _errorMessage!,
+                        style: const TextStyle(color: Colors.red),
                       ),
                     ),
                   ],
-                )
-              ],
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        "Already have an account?",
+                        style: TextStyle(color: Colors.grey[700]),
+                      ),
+                      const SizedBox(width: 4),
+                      GestureDetector(
+                        onTap: widget.onTap,
+                        child: Text(
+                          "Login Now",
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.orange.shade800,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }

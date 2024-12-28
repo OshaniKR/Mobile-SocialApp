@@ -1,7 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:social/components/text_box.dart'; // Import the correct file
+import 'package:social/components/text_box.dart';
+import 'package:social/pages/home_page.dart'; // Import the correct file
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});

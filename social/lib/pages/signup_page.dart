@@ -63,7 +63,7 @@ class _SignupPageState extends State<SignupPage> {
         password: password,
       );
 
-      FirebaseFirestore.instance
+      await FirebaseFirestore.instance
           .collection("Users")
           .doc(userCredential.user!.email)
           .set({
@@ -117,22 +117,23 @@ class _SignupPageState extends State<SignupPage> {
           Positioned.fill(
             child: Container(
               decoration: BoxDecoration(
-                color:
-                    Colors.white.withOpacity(0.7), // Background opacity color
-                borderRadius: BorderRadius.circular(0),
+                gradient: LinearGradient(
+                  colors: [Colors.white, Colors.orange.shade100],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
               ),
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Image/Icon on the top-right
                   Align(
                     alignment: Alignment.topRight,
                     child: Image.asset(
                       'assets/petpals.png', // Your image path here
-                      height: 50,
-                      width: 50,
+                      height: 150,
+                      width: 150,
                     ),
                   ),
                   Text(

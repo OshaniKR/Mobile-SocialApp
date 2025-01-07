@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:social/pages/home_page.dart';
 
 class GetStartedPage extends StatefulWidget {
   const GetStartedPage({super.key});

@@ -79,21 +79,23 @@ class _SignInPageState extends State<SignInPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[300],
-      body: Center(
-        child: SingleChildScrollView(
-          // Ensure content is scrollable
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          // Background gradient
+          Positioned.fill(
             child: Container(
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20),
                 gradient: LinearGradient(
                   colors: [Colors.white, Colors.orange.shade100],
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                 ),
               ),
+            ),
+          ),
+          SingleChildScrollView(
+            child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -185,7 +187,7 @@ class _SignInPageState extends State<SignInPage> {
               ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }

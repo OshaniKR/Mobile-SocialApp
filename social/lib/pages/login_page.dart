@@ -157,19 +157,30 @@ class _SignInPageState extends State<SignInPage> {
                   Center(
                     child: ElevatedButton.icon(
                       onPressed: signIn, // Use the signIn method here
-                      icon:
-                          const Icon(Icons.arrow_forward, color: Colors.white),
-                      label: const Text('Login'),
+
+                      label: const Text(
+                        'Login',
+                        style: TextStyle(
+                          fontSize: 18, // Increase the text size
+                          fontWeight:
+                              FontWeight.bold, // Make the text bold (optional)
+                          color: Colors.white, // Set the text color to white
+                        ),
+                      ),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.orange.shade800,
+                        backgroundColor:
+                            Colors.orange.shade800, // Button background color
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30),
+                          borderRadius: BorderRadius.circular(20),
                         ),
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 40, vertical: 15),
+                          horizontal: 60, // Increase the button width
+                          vertical: 15, // Increase the button height
+                        ),
                       ),
                     ),
                   ),
+
                   const SizedBox(height: 10),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,

@@ -204,19 +204,30 @@ class _SignupPageState extends State<SignupPage> {
                       ? const CircularProgressIndicator()
                       : ElevatedButton.icon(
                           onPressed: _signUp,
-                          icon: const Icon(Icons.arrow_forward,
-                              color: Colors.white),
-                          label: const Text('Sign up'),
+                          label: const Text(
+                            'Sign up',
+                            style: TextStyle(
+                              fontSize: 18, // Increase text size
+                              fontWeight: FontWeight
+                                  .bold, // Make the text bold (optional)
+                              color:
+                                  Colors.white, // Set the text color to white
+                            ),
+                          ),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.orange.shade800,
+                            backgroundColor: Colors
+                                .orange.shade800, // Button background color
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(30),
+                              borderRadius: BorderRadius.circular(20),
                             ),
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 40, vertical: 15),
+                              horizontal: 60, // Increase the button width
+                              vertical: 15, // Increase the button height
+                            ),
                           ),
                         ),
                 ),
+
                 if (_errorMessage != null) ...[
                   const SizedBox(height: 20),
                   Center(

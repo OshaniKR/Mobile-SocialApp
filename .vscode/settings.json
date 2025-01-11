@@ -1,3 +1,4 @@
 {
-    "cmake.sourceDirectory": "D:/5th sem/MobileApplication/social/social/linux"
+    "cmake.sourceDirectory": "D:/5th sem/MobileApplication/social/social/linux",
+    "git.ignoreLimitWarning": true
 }

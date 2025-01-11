@@ -41,11 +41,17 @@ class _SignInPageState extends State<SignInPage> {
 
   // SignIn method to handle login
   Future<void> signIn() async {
+    if (emailTextController.text.isEmpty ||
+        passwordTextController.text.isEmpty) {
+      displayMessage('Please fill in all fields', 'Validation Error', true);
+      return;
+    }
+
     try {
       showLoadingDialog();
       await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: emailTextController.text,
-        password: passwordTextController.text,
+        email: emailTextController.text.trim(),
+        password: passwordTextController.text.trim(),
       );
 
       if (mounted) {
@@ -94,13 +100,21 @@ class _SignInPageState extends State<SignInPage> {
               ),
             ),
           ),
-          SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
+            child: SingleChildScrollView(
               child: Column(
-                mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  Align(
+                    alignment: Alignment.topRight,
+                    child: Image.asset(
+                      'assets/petpals.png', // Update with the correct path
+                      height: 150,
+                      width: 150,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
                   Text(
                     'Sign In',
                     style: TextStyle(
@@ -110,31 +124,25 @@ class _SignInPageState extends State<SignInPage> {
                     ),
                   ),
                   const SizedBox(height: 20),
+                  // Email TextField
                   TextField(
                     controller: emailTextController,
                     decoration: const InputDecoration(
                       labelText: 'Email',
                       labelStyle: TextStyle(color: Colors.black),
-                      border: UnderlineInputBorder(
-                        borderSide: BorderSide(color: Colors.black),
-                      ),
-                      focusedBorder: UnderlineInputBorder(
-                        borderSide: BorderSide(color: Colors.black),
-                      ),
+                      border: UnderlineInputBorder(),
+                      focusedBorder: UnderlineInputBorder(),
                     ),
                   ),
                   const SizedBox(height: 20),
+                  // Password TextField
                   TextField(
                     controller: passwordTextController,
                     decoration: const InputDecoration(
                       labelText: 'Password',
                       labelStyle: TextStyle(color: Colors.black),
-                      border: UnderlineInputBorder(
-                        borderSide: BorderSide(color: Colors.black),
-                      ),
-                      focusedBorder: UnderlineInputBorder(
-                        borderSide: BorderSide(color: Colors.black),
-                      ),
+                      border: UnderlineInputBorder(),
+                      focusedBorder: UnderlineInputBorder(),
                     ),
                     obscureText: true,
                   ),

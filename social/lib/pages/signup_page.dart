@@ -17,6 +17,7 @@ class _SignupPageState extends State<SignupPage> {
   final TextEditingController passwordTextController = TextEditingController();
   final TextEditingController confirmPasswordController =
       TextEditingController();
+  final TextEditingController usernameController = TextEditingController();
 
   bool _isLoading = false;
   String? _errorMessage;
@@ -41,8 +42,12 @@ class _SignupPageState extends State<SignupPage> {
     final String email = emailTextController.text.trim();
     final String password = passwordTextController.text.trim();
     final String confirmPassword = confirmPasswordController.text.trim();
+    final String username = usernameController.text.trim();
 
-    if (email.isEmpty || password.isEmpty || confirmPassword.isEmpty) {
+    if (email.isEmpty ||
+        password.isEmpty ||
+        confirmPassword.isEmpty ||
+        username.isEmpty) {
       _showErrorDialog('Please fill all the fields');
       return;
     }
@@ -68,7 +73,8 @@ class _SignupPageState extends State<SignupPage> {
           .collection("Users")
           .doc(userCredential.user!.email)
           .set({
-        'username': email.split("@")[0],
+        'username': username,
+        'email': email,
         'bio': 'Empty bio...',
       });
 
@@ -143,6 +149,17 @@ class _SignupPageState extends State<SignupPage> {
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
                     color: Colors.orange.shade800,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                // Username TextField
+                TextField(
+                  controller: usernameController,
+                  decoration: const InputDecoration(
+                    labelText: 'Username',
+                    labelStyle: TextStyle(color: Colors.black),
+                    border: UnderlineInputBorder(),
+                    focusedBorder: UnderlineInputBorder(),
                   ),
                 ),
                 const SizedBox(height: 20),

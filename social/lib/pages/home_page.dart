@@ -53,13 +53,6 @@ class HomePageState extends State<HomePage> {
           'Home Page',
           style: TextStyle(color: Colors.white),
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.exit_to_app, color: Colors.white),
-            onPressed: signOut,
-            tooltip: 'Sign Out',
-          ),
-        ],
       ),
       drawer: MyDrawer(
         onProfileTap: goToProfilePage,

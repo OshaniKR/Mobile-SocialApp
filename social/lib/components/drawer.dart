@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class MyDrawer extends StatelessWidget {
   final VoidCallback? onHomeTap;
@@ -16,38 +18,92 @@ class MyDrawer extends StatelessWidget {
     this.onSignOut,
   });
 
+  // Fetch user data from Firestore
+  Future<Map<String, String>> fetchUserData() async {
+    final currentUser = FirebaseAuth.instance.currentUser!;
+    final userDoc = await FirebaseFirestore.instance
+        .collection("Users")
+        .doc(currentUser.email)
+        .get();
+
+    if (userDoc.exists) {
+      final userData = userDoc.data()!;
+      return {
+        'profileImage': userData['profileImage'] ?? '', // Profile Image URL
+        'username': userData['name'] ?? 'No Name', // User Name
+      };
+    } else {
+      return {
+        'profileImage': '', // Default values if no user data found
+        'username': 'No Name',
+      };
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Drawer(
-      backgroundColor:
-          const Color(0xFFCF9A0E), // Match the yellow color from the image
+      backgroundColor: const Color(0xFFCF9A0E), // Match the yellow color
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           // Top section: Profile and navigation items
           Column(
             children: [
-              // Profile header
-              const DrawerHeader(
-                child: Column(
-                  children: [
-                    // Profile picture
-                    CircleAvatar(
-                      radius: 40, // Circular image
-                      backgroundImage: NetworkImage(
-                          'https://via.placeholder.com/150'), // Replace with actual profile image URL
-                    ),
-                    SizedBox(height: 10), // Spacing
-                    Text(
-                      'Amal de Silva', // User name
-                      style: TextStyle(
-                        color: Colors.white, // Match white color from the image
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
+              // Profile header with dynamic data
+              FutureBuilder<Map<String, String>>(
+                future: fetchUserData(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const DrawerHeader(
+                      child: Center(
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                        ),
                       ),
-                    ),
-                  ],
-                ),
+                    );
+                  } else if (snapshot.hasError) {
+                    return const DrawerHeader(
+                      child: Center(
+                        child: Text(
+                          'Error loading profile',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    );
+                  } else {
+                    final userData = snapshot.data!;
+                    return DrawerHeader(
+                      child: Column(
+                        children: [
+                          // Profile picture
+                          CircleAvatar(
+                            radius: 40, // Circular image
+                            backgroundImage: userData['profileImage'] != ''
+                                ? NetworkImage(userData['profileImage']!)
+                                : null,
+                            child: userData['profileImage'] == ''
+                                ? const Icon(
+                                    Icons.person,
+                                    size: 40,
+                                    color: Colors.white,
+                                  )
+                                : null,
+                          ),
+                          const SizedBox(height: 10), // Spacing
+                          Text(
+                            userData['username']!, // User name
+                            style: const TextStyle(
+                              color: Colors.white, // Match white color
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+                },
               ),
 
               // Navigation items

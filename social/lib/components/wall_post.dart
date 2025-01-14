@@ -1,11 +1,14 @@
+import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:social/components/comment_button.dart';
 import 'package:social/components/like_button.dart';
-import 'package:social/components/comment.dart'; // Ensure you import the Comment widget file
+import 'package:social/components/comment.dart';
 import 'package:social/components/helper/helper_methods.dart';
-import 'package:social/components/delete_button.dart'; // Import the helper methods if required
+import 'package:social/components/delete_button.dart';
 
 class WallPost extends StatefulWidget {
   final String message;
@@ -13,6 +16,7 @@ class WallPost extends StatefulWidget {
   final String postId;
   final String time;
   final List<String> likes;
+  final String? imageUrl;
 
   const WallPost({
     Key? key,
@@ -21,6 +25,7 @@ class WallPost extends StatefulWidget {
     required this.time,
     required this.postId,
     required this.likes,
+    this.imageUrl,
   }) : super(key: key);
 
   @override
@@ -31,20 +36,76 @@ class _WallPostState extends State<WallPost> {
   final currentUser = FirebaseAuth.instance.currentUser!;
   late bool isLiked;
   final _commentTextController = TextEditingController();
+  final ImagePicker _picker = ImagePicker();
+  String? _uploadedImageUrl;
+
+  // Firestore collection constants
+  static const userPostsCollection = "User Posts";
+  static const commentsCollection = "Comments";
 
   @override
   void initState() {
     super.initState();
     isLiked = widget.likes.contains(currentUser.email);
+    _uploadedImageUrl = widget.imageUrl;
   }
 
+  @override
+  void dispose() {
+    _commentTextController.dispose();
+    super.dispose();
+  }
+
+  // Handle image picking
+  Future<void> pickImage() async {
+    try {
+      final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+      if (pickedFile != null) {
+        await uploadImage(File(pickedFile.path));
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error picking image: $e')),
+      );
+    }
+  }
+
+  // Handle image upload
+  Future<void> uploadImage(File image) async {
+    try {
+      final storageRef = FirebaseStorage.instance.ref().child(
+          'post_images/${widget.postId}/${DateTime.now().toIso8601String()}');
+      final uploadTask = await storageRef.putFile(image);
+      final imageUrl = await uploadTask.ref.getDownloadURL();
+
+      await FirebaseFirestore.instance
+          .collection(userPostsCollection)
+          .doc(widget.postId)
+          .update({'imageUrl': imageUrl});
+
+      setState(() {
+        _uploadedImageUrl = imageUrl;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Image uploaded successfully!')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error uploading image: $e')),
+      );
+    }
+  }
+
+  // Toggle like state
   void toggleLike() {
     setState(() {
       isLiked = !isLiked;
     });
 
-    DocumentReference postRef =
-        FirebaseFirestore.instance.collection('User Posts').doc(widget.postId);
+    final postRef = FirebaseFirestore.instance
+        .collection(userPostsCollection)
+        .doc(widget.postId);
 
     if (isLiked) {
       postRef.update({
@@ -57,18 +118,32 @@ class _WallPostState extends State<WallPost> {
     }
   }
 
-  void addComment(String commentText) {
-    FirebaseFirestore.instance
-        .collection("User Posts")
-        .doc(widget.postId)
-        .collection("Comments")
-        .add({
-      "CommentText": commentText,
-      "CommentBy": currentUser.email,
-      "CommentTime": Timestamp.now(),
-    });
+  // Add a comment to Firestore
+  void addComment(String commentText) async {
+    try {
+      if (commentText.trim().isEmpty) return;
+
+      await FirebaseFirestore.instance
+          .collection(userPostsCollection)
+          .doc(widget.postId)
+          .collection(commentsCollection)
+          .add({
+        "CommentText": commentText,
+        "CommentBy": currentUser.email,
+        "CommentTime": Timestamp.now(),
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Comment added successfully!')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error adding comment: $e')),
+      );
+    }
   }
 
+  // Show a dialog for adding comments
   void showCommentDialog() {
     showDialog(
       context: context,
@@ -99,56 +174,32 @@ class _WallPostState extends State<WallPost> {
     );
   }
 
-  void deletePost() {
-    // Show a dialog box for confirmation
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text("Delete Post"),
-        content: const Text("Confirm the deletion"),
-        actions: [
-          // Cancel button
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("Cancel"),
-          ),
-          // Delete button
-          TextButton(
-            onPressed: () async {
-              // Delete the comments from Firestore first
-              // If you only delete the post, the comments will still be stored in Firestore
-              final commentDocs = await FirebaseFirestore.instance
-                  .collection("User Posts")
-                  .doc(widget.postId)
-                  .collection("Comments")
-                  .get();
+  // Delete the post and its comments
+  Future<void> deletePost() async {
+    try {
+      final commentDocs = await FirebaseFirestore.instance
+          .collection(userPostsCollection)
+          .doc(widget.postId)
+          .collection(commentsCollection)
+          .get();
 
-              for (var doc in commentDocs.docs) {
-                await FirebaseFirestore.instance
-                    .collection("User Posts")
-                    .doc(widget.postId)
-                    .collection("Comments")
-                    .doc(doc.id)
-                    .delete();
-              }
+      for (var doc in commentDocs.docs) {
+        await doc.reference.delete();
+      }
 
-              // Then delete the post
-              FirebaseFirestore.instance
-                  .collection("User Posts")
-                  .doc(widget.postId)
-                  .delete()
-                  .then((value) => print("Post deleted"))
-                  .catchError(
-                      (error) => print("Failed to delete post: $error"));
+      await FirebaseFirestore.instance
+          .collection(userPostsCollection)
+          .doc(widget.postId)
+          .delete();
 
-              // Dismiss the dialog box
-              Navigator.pop(context);
-            },
-            child: const Text("Delete"),
-          ),
-        ],
-      ),
-    );
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Post deleted successfully!')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error deleting post: $e')),
+      );
+    }
   }
 
   @override
@@ -165,7 +216,7 @@ class _WallPostState extends State<WallPost> {
             padding: const EdgeInsets.all(15.0),
             decoration: const BoxDecoration(
               gradient: LinearGradient(
-                colors: [Color.fromARGB(255, 199, 188, 173), Colors.white],
+                colors: [Color(0xFFC7BCAD), Colors.white],
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
               ),
@@ -178,66 +229,52 @@ class _WallPostState extends State<WallPost> {
                   widget.user,
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
-                    color: Color.fromARGB(255, 15, 15, 15),
+                    color: Colors.black87,
                   ),
                 ),
                 const SizedBox(height: 5),
-                Text(
-                  widget.message,
-                  style: const TextStyle(fontSize: 16),
-                ),
-                Text(
-                  widget.time,
-                  style: TextStyle(color: Colors.grey[600], fontSize: 12),
-                ),
+                Text(widget.message, style: const TextStyle(fontSize: 16)),
+                if (_uploadedImageUrl != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 10),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
+                      child: Image.network(
+                        _uploadedImageUrl!,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  ),
                 const SizedBox(height: 10),
+                Text(widget.time,
+                    style: TextStyle(color: Colors.grey[600], fontSize: 12)),
               ],
             ),
           ),
           const Divider(),
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Column(
-                children: [
-                  LikeButton(
-                    isLiked: isLiked,
-                    onTap: toggleLike,
-                  ),
-                  const SizedBox(height: 5),
-                  Text(
-                    widget.likes.length.toString(),
-                    style: const TextStyle(color: Colors.grey),
-                  ),
-                ],
-              ),
+              LikeButton(isLiked: isLiked, onTap: toggleLike),
               const SizedBox(width: 10),
-              Column(
-                children: [
-                  CommentButton(onTap: showCommentDialog),
-                  const SizedBox(height: 5),
-                  const Text(
-                    '0', // Placeholder for comments count
-                    style: TextStyle(color: Color.fromARGB(255, 255, 255, 255)),
-                  ),
-                ],
-              ),
+              CommentButton(onTap: showCommentDialog),
+              const Spacer(),
+              if (widget.user == currentUser.email)
+                ElevatedButton(
+                  onPressed: pickImage,
+                  child: const Text("Upload Image"),
+                ),
             ],
           ),
-          const SizedBox(height: 20),
           StreamBuilder<QuerySnapshot>(
             stream: FirebaseFirestore.instance
-                .collection("User Posts")
+                .collection(userPostsCollection)
                 .doc(widget.postId)
-                .collection("Comments")
+                .collection(commentsCollection)
                 .orderBy("CommentTime", descending: true)
                 .snapshots(),
             builder: (context, snapshot) {
               if (!snapshot.hasData) {
-                return const Center(
-                  child: CircularProgressIndicator(),
-                );
+                return const Center(child: CircularProgressIndicator());
               }
 
               return ListView(

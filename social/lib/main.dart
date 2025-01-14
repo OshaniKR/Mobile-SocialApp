@@ -3,6 +3,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:device_preview/device_preview.dart'; // Add DevicePreview
 import 'package:social/auth/login_or_register.dart'; // Your login page
 import 'firebase_options.dart';
+import 'pages/my_posts.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -33,8 +34,8 @@ class MyApp extends StatelessWidget {
       builder: DevicePreview.appBuilder, // Integrate DevicePreview
       home: const SplashScreen(), // Start with SplashScreen
       routes: {
-        '/login': (context) =>
-            const LoginOrRegister(), // Define your login route
+        '/login': (context) => const LoginOrRegister(),
+        '/myPosts': (context) => MyPostsPage(), // Define your login route
       },
     );
   }

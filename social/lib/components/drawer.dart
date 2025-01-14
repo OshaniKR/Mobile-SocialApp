@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 class MyDrawer extends StatelessWidget {
   final VoidCallback? onHomeTap;
   final VoidCallback? onPostsTap;
+  final VoidCallback? onMyPostsTap;
   final VoidCallback? onProfileTap;
   final VoidCallback? onSettingsTap;
   final VoidCallback? onSignOut;
@@ -13,6 +14,7 @@ class MyDrawer extends StatelessWidget {
     super.key,
     this.onHomeTap,
     this.onPostsTap,
+    this.onMyPostsTap,
     this.onProfileTap,
     this.onSettingsTap,
     this.onSignOut,
@@ -114,13 +116,27 @@ class MyDrawer extends StatelessWidget {
               ),
               _buildDrawerItem(
                 icon: Icons.photo_library,
-                text: 'Posts',
-                onTap: onPostsTap,
+                text: 'My Posts',
+                onTap: () {
+                  if (onMyPostsTap != null) {
+                    onMyPostsTap!();
+                  } else {
+                    Navigator.pushNamed(
+                        context, '/myPosts'); // Ensure correct navigation
+                  }
+                },
               ),
               _buildDrawerItem(
                 icon: Icons.person,
                 text: 'Profile',
-                onTap: onProfileTap,
+                onTap: () {
+                  if (onProfileTap != null) {
+                    onProfileTap!();
+                  } else {
+                    Navigator.pushNamed(
+                        context, '/profile'); // Correct navigation route
+                  }
+                },
               ),
               _buildDrawerItem(
                 icon: Icons.settings,
